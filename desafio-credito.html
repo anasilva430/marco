@@ -1,0 +1,535 @@
+
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mestre do Crédito - Literacia Financeira</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* TEMA FINTECH MODERNO */
+        :root {
+            --bg-dark: #0f172a;       /* Slate 900 */
+            --bg-card: #1e293b;       /* Slate 800 */
+            --primary: #00f0ff;       /* Ciano Elétrico */
+            --secondary: #818cf8;     /* Indigo Suave */
+            --danger: #ff4a57;        /* Coral Alerta (Dívida) */
+            --success: #10b981;       /* Verde (Liquidez) */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: var(--bg-card);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Efeito de brilho de fundo */
+        .container::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(0, 240, 255, 0.03) 0%, transparent 60%);
+            z-index: 0; pointer-events: none;
+        }
+
+        h1, h2, h3, p, div { position: relative; z-index: 1; }
+
+        .screen { display: none; width: 100%; flex-direction: column; align-items: center; text-align: center; }
+        .screen.active { display: flex; animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(30px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* TIPOGRAFIA */
+        h1 { font-size: 3.5rem; font-weight: 900; line-height: 1.1; margin-bottom: 20px; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { font-size: 2rem; margin-bottom: 25px; color: var(--text-main); }
+        .desc { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 40px; max-width: 700px; line-height: 1.6; }
+
+        /* FORMULÁRIos */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 800px; text-align: left; margin-bottom: 30px; }
+        .form-group { width: 100%; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-group label { display: block; font-size: 0.9rem; color: var(--secondary); margin-bottom: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+        .form-group input { 
+            width: 100%; background: rgba(0,0,0,0.2); border: 2px solid rgba(255,255,255,0.1); 
+            padding: 14px 20px; color: white; font-size: 1rem; border-radius: 12px; transition: all 0.3s; font-family: 'Outfit';
+        }
+        .form-group input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); }
+        .member-block { background: rgba(0,0,0,0.15); padding: 20px; border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1); }
+
+        /* BOTÕES */
+        .btn {
+            background: var(--primary); color: #000; border: none; padding: 18px 40px; 
+            font-size: 1.1rem; font-weight: 700; border-radius: 14px; cursor: pointer; transition: all 0.3s;
+            text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
+        }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 240, 255, 0.5); }
+        .btn:disabled { background: #334155; color: #64748b; box-shadow: none; cursor: not-allowed; transform: none; }
+
+        /* JOGO: DASHBOARD */
+        .dashboard { 
+            width: 100%; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; 
+            background: rgba(0,0,0,0.2); padding: 20px; border-radius: 16px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.05);
+        }
+        .dash-item { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; border-right: 1px solid rgba(255,255,255,0.05); }
+        .dash-item:last-child { border-right: none; }
+        .dash-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .dash-val { font-size: 1.8rem; font-weight: 900; }
+        .val-liq { color: var(--success); }
+        .val-div { color: var(--danger); }
+        .val-sco { color: var(--primary); }
+        .val-tim { color: var(--text-main); }
+
+        /* DECISÕES */
+        .question-box { width: 100%; text-align: left; margin-bottom: 30px; }
+        .q-tag { display: inline-block; background: rgba(129, 140, 248, 0.2); color: var(--secondary); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;}
+        .q-title { font-size: 1.8rem; margin-bottom: 15px; line-height: 1.3; }
+        .q-desc { font-size: 1.1rem; color: var(--text-muted); line-height: 1.5; }
+
+        .options-grid { display: flex; flex-direction: column; gap: 15px; width: 100%; }
+        .opt-btn {
+            background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.1); border-radius: 16px;
+            padding: 25px; color: var(--text-main); font-size: 1.1rem; text-align: left; cursor: pointer;
+            transition: all 0.2s; font-family: 'Outfit'; line-height: 1.4;
+        }
+        .opt-btn:hover { background: rgba(0, 240, 255, 0.05); border-color: var(--primary); transform: translateX(5px); }
+
+        /* FEEDBACK */
+        #feedbackBox { 
+            display: none; width: 100%; margin-top: 25px; padding: 25px; border-radius: 16px; 
+            background: rgba(0,0,0,0.3); border-left: 5px solid var(--primary); text-align: left;
+        }
+        .fb-text { font-size: 1.2rem; font-weight: 500; margin-bottom: 15px; }
+        .fb-impact { font-size: 1rem; color: var(--text-muted); font-family: monospace; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; }
+
+        /* RESULTADOS */
+        .res-grid { display: grid; grid-template-columns: 1fr; gap: 20px; width: 100%; max-width: 600px; margin: 30px 0; }
+        .res-card { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 20px; }
+        .res-highlight { font-size: 3.5rem; font-weight: 900; margin: 10px 0; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="dashboard" id="gameDashboard" style="display: none;">
+        <div class="dash-item"><span class="dash-label">Liquidez</span><span class="dash-val val-liq" id="ui-liq">1000€</span></div>
+        <div class="dash-item"><span class="dash-label">Dívida</span><span class="dash-val val-div" id="ui-div">0€</span></div>
+        <div class="dash-item"><span class="dash-label">Score C.</span><span class="dash-val val-sco" id="ui-sco">1000</span></div>
+        <div class="dash-item"><span class="dash-label">Tempo</span><span class="dash-val val-tim" id="ui-time">00:00</span></div>
+    </div>
+
+    <div class="screen active" id="screen-intro">
+        <h1>MESTRE DO <br>CRÉDITO</h1>
+        <p class="desc">A literacia financeira não é apenas sobre poupar, é sobre saber usar o sistema a teu favor. Prepara-te para 15 decisões reais sobre cartões de crédito, spreads, TAEG e sobre-endividamento. Pensa bem, e faz as contas!</p>
+        <button class="btn" onclick="showScreen('screen-setup')">Iniciar Desafio</button>
+    </div>
+
+    <div class="screen" id="screen-setup">
+        <h2>Identificação da Equipa</h2>
+        <p class="desc" style="margin-bottom: 20px;">Registem os dados exatamente como solicitados para o Ranking Moodle.</p>
+        
+        <div class="form-grid">
+            <div class="form-group full">
+                <label>Nome da Equipa</label>
+                <input type="text" id="f_equipa" required>
+            </div>
+            <div class="form-group full">
+                <label>Email de Contacto</label>
+                <input type="email" id="f_email" required>
+            </div>
+
+            <div class="member-block form-group full" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group" style="margin:0;"><label>Nome (1º e Último) - Aluno 1</label><input type="text" id="f_nome1" required></div>
+                <div class="form-group" style="margin:0;"><label>Turma - Aluno 1</label><input type="text" id="f_turma1" required></div>
+            </div>
+
+            <div class="member-block form-group full" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group" style="margin:0;"><label>Nome (1º e Último) - Aluno 2</label><input type="text" id="f_nome2" required></div>
+                <div class="form-group" style="margin:0;"><label>Turma - Aluno 2</label><input type="text" id="f_turma2" required></div>
+            </div>
+
+            <div class="member-block form-group full" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group" style="margin:0;"><label>Nome - Aluno 3 (Opcional)</label><input type="text" id="f_nome3"></div>
+                <div class="form-group" style="margin:0;"><label>Turma - Aluno 3 (Opcional)</label><input type="text" id="f_turma3"></div>
+            </div>
+        </div>
+
+        <button class="btn" onclick="startGame()">Entrar no Sistema Financeiro</button>
+    </div>
+
+    <div class="screen" id="screen-game">
+        <div class="question-box">
+            <span class="q-tag" id="q-counter">Desafio 1/15</span>
+            <h2 class="q-title" id="q-title">Título</h2>
+            <p class="q-desc" id="q-desc">Descrição</p>
+        </div>
+        
+        <div class="options-grid" id="q-options"></div>
+
+        <div id="feedbackBox">
+            <p class="fb-text" id="fb-text"></p>
+            <p class="fb-impact" id="fb-impact"></p>
+        </div>
+    </div>
+
+    <div class="screen" id="screen-result">
+        <h2 style="color: var(--primary);">RELATÓRIO FINANCEIRO</h2>
+        <p class="desc">A vossa jornada terminou. O Banco de Portugal avaliou as vossas decisões.</p>
+        
+        <div class="res-grid">
+            <div class="res-card">
+                <p style="text-transform: uppercase; color: var(--secondary); font-weight: 700; letter-spacing: 1px;">Património Líquido Final</p>
+                <p style="font-size: 0.9rem; color: var(--text-muted);">(Liquidez - Dívida)</p>
+                <p class="res-highlight" id="r-patrimonio" style="color: var(--text-main);">0€</p>
+                <div style="display: flex; justify-content: space-between; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                    <div><span style="color: var(--text-muted);">Score Final:</span> <strong id="r-score" style="color: var(--primary);">1000</strong></div>
+                    <div><span style="color: var(--text-muted);">Tempo:</span> <strong id="r-tempo" style="color: white;">00:00</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn" id="btnSubmit" onclick="enviarParaMoodle()">Submeter para o Ranking da Turma</button>
+        <p id="submitStatus" style="margin-top: 15px; font-weight: 500;"></p>
+    </div>
+
+</div>
+
+<script>
+    // =========================================================================
+    // DADOS DO JOGO - CRÉDITO E ENDIVIDAMENTO
+    // =========================================================================
+    const desafios = [
+        {
+            title: "O Primeiro Cartão de Crédito",
+            desc: "Fizeste 18 anos. O banco envia-te um cartão de crédito com limite de 1.500€. A TAEG é de 16%. Queres muito comprar uma consola nova de 500€. O que fazes?",
+            options: [
+                { text: "Aceito o cartão e compro a consola a crédito. Pago aos poucos.", effect: { liq: 500, div: 580, sco: -50 }, fb: "Criaste uma dívida de consumo (Dívida Má) com juros altos. A consola vai custar-te muito mais do que o preço da montra." },
+                { text: "Recuso usar o cartão para bens de lazer. Poupo o dinheiro primeiro e compro a pronto.", effect: { liq: -500, div: 0, sco: 50 }, fb: "Excelente! Dinheiro de crédito não é rendimento extra. Poupaste 80€ em juros." }
+            ]
+        },
+        {
+            title: "Dívida Boa vs. Dívida Má",
+            desc: "Precisas urgentemente de um computador de 1.000€ para iniciar um trabalho freelancer que te vai render dinheiro. Não tens o valor total.",
+            options: [
+                { text: "Peço um crédito pessoal. É um investimento, vai gerar rendimento (Dívida Boa).", effect: { liq: 1500, div: 1100, sco: 20 }, fb: "Correto. Contrair dívida para gerar um rendimento superior ao custo dos juros é alavancagem inteligente." },
+                { text: "Não compro o computador e desisto do trabalho. Detesto dever dinheiro.", effect: { liq: 0, div: 0, sco: -20 }, fb: "O medo excessivo da dívida fez-te perder uma oportunidade de aumentar o teu património a longo prazo." }
+            ]
+        },
+        {
+            title: "CÁLCULO DE CRÉDITO: A Armadilha da Prestação",
+            desc: "Vais comprar um carro usado (5.000€). Qual é a opção mais barata no final do contrato?\n\nOPÇÃO A: Prazo 48 meses | Prestação 120€\nOPÇÃO B: Prazo 60 meses | Prestação 105€",
+            options: [
+                { text: "Opção A: É mais barata globalmente (Custo total: 5.760€).", effect: { liq: 5000, div: 5760, sco: 100 }, fb: "Matemática perfeita! 48x120€ = 5.760€. Pagas uma prestação maior, mas menos juros ao banco." },
+                { text: "Opção B: É mais barata porque a prestação mensal é menor (Custo total: 6.300€).", effect: { liq: 5000, div: 6300, sco: -100 }, fb: "Erro matemático comum! Focaste-te na prestação mensal em vez do Custo Total do Crédito. 60x105€ = 6.300€. Pagaste mais 540€ ao banco." }
+            ]
+        },
+        {
+            title: "O Pagamento Mínimo",
+            desc: "Recebeste o extrato do cartão de crédito: tens 800€ para pagar. Podes pagar o valor total (100%) ou o pagamento mínimo obrigatório (5%).",
+            options: [
+                { text: "Pago apenas o mínimo (40€). Sobra mais dinheiro este mês.", effect: { liq: -40, div: 850, sco: -80 }, fb: "Cuidado! Pagando só o mínimo, a maior parte vai para juros e a dívida mantém-se quase intacta, transformando-se numa 'bola de neve'." },
+                { text: "Pago a totalidade a 100% (800€).", effect: { liq: -800, div: -800, sco: 80 }, fb: "Hábito de Ouro! Usaste o cartão de crédito apenas como meio de pagamento, usufruindo da conveniência sem pagar juros." }
+            ]
+        },
+        {
+            title: "Fundo de Emergência vs. Crédito Rápido",
+            desc: "O frigorífico avariou e custa 600€. Como resolves?",
+            options: [
+                { text: "Uso o meu Fundo de Emergência para pagar a pronto.", effect: { liq: -600, div: 0, sco: 30 }, fb: "Para isto serve o Fundo de Emergência: transformar um desastre financeiro num mero inconveniente." },
+                { text: "Peço um crédito rápido na loja (TAEG 15%).", effect: { liq: 0, div: 690, sco: -40 }, fb: "A falta de poupança preventiva forçou-te a pagar juros por um bem básico de desgaste." }
+            ]
+        },
+        {
+            title: "Crédito Habitação: O Spread e as Vendas Associadas",
+            desc: "O Banco oferece-te um Spread baixo (1%) se comprares o Seguro de Vida deles (que custa o dobro do mercado). O que dizes?",
+            options: [
+                { text: "Aceito. O mais importante no Crédito Habitação é o Spread mais baixo possível.", effect: { liq: -200, div: 0, sco: -50 }, fb: "Mito financeiro! O seguro de vida caro anula a poupança do Spread. O que conta é a TAER (Taxa Anual Efetiva Revista)." },
+                { text: "Peço simulações da TAER, incluindo os seguros fora do banco, antes de assinar.", effect: { liq: 500, div: 0, sco: 80 }, fb: "Inteligente. Ao comparar o MTIC (Montante Total Imputado ao Consumidor), descobriste que o seguro noutra seguradora compensava um spread maior." }
+            ]
+        },
+        {
+            title: "A Taxa Fixa vs. Variável",
+            desc: "Vais fazer um crédito de longa duração. A Euribor está em mínimos históricos (taxa variável muito baixa). O que escolhes?",
+            options: [
+                { text: "Taxa Fixa. Fixo a prestação ligeiramente mais alta agora, para dormir descansado por 30 anos.", effect: { liq: 0, div: 0, sco: 60 }, fb: "Gestão de Risco! Protegeste a tua Taxa de Esforço contra subidas inesperadas do mercado." },
+                { text: "Taxa Variável. Escolho a mais barata agora. Se subir muito, logo vejo.", effect: { liq: 300, div: 1000, sco: -60 }, fb: "Risco Elevado. Quando as taxas de juro subirem, a tua prestação pode duplicar, causando rutura no orçamento." }
+            ]
+        },
+        {
+            title: "CÁLCULO DE CRÉDITO: Crédito Consolidado",
+            desc: "Tens 3 créditos (Total em dívida: 6.000€). Pagas 300€/mês.\nO banco propõe juntar tudo num só crédito: Pagas apenas 150€/mês durante 60 meses. Compensa?",
+            options: [
+                { text: "Sim, aceito! É ótimo baixar a prestação para metade.", effect: { liq: 150, div: 3000, sco: -80 }, fb: "Ilusão financeira! A prestação desceu porque o prazo aumentou. 60x150€ = 9.000€. Pagaste mais 3.000€ do que a dívida original." },
+                { text: "Não. Faço as contas e vejo que vou pagar muito mais no total. Faço um esforço para pagar rápido a dívida original.", effect: { liq: -150, div: -1000, sco: 100 }, fb: "Bem calculado! O crédito consolidado só faz sentido em casos extremos de pré-incumprimento, pois aumenta o Custo Total do Crédito." }
+            ]
+        },
+        {
+            title: "O Fiador Amigo",
+            desc: "Um grande amigo pede-te para seres fiador do crédito automóvel dele, porque o banco não confia no salário dele.",
+            options: [
+                { text: "Claro, é meu amigo e ele jura que vai pagar a horas.", effect: { liq: 0, div: 10000, sco: -100 }, fb: "Grave Risco! Ao seres fiador, a dívida é tua se ele não pagar. A tua Taxa de Esforço sobe, impedindo-te de pedir créditos para ti." },
+                { text: "Digo que não. Explicando que compromete a minha futura estabilidade financeira.", effect: { liq: 0, div: 0, sco: 50 }, fb: "Difícil pessoalmente, mas correto financeiramente. O banco recusou porque o risco era real." }
+            ]
+        },
+        {
+            title: "A Armadilha do Buy Now, Pay Later",
+            desc: "Estás numa loja de roupa online. O carrinho tem 300€. Surge a opção 'Pague em 3x sem juros (Klarna/Oney)'.",
+            options: [
+                { text: "Uso a opção! É sem juros e não sinto o peso do dinheiro a sair.", effect: { liq: 300, div: 300, sco: -30 }, fb: "Isto promove o sobre-endividamento por impulso. Estas micro-dívidas acumulam-se silenciosamente." },
+                { text: "Se não tenho os 300€ ou não quero dar tudo agora, esvazio o carrinho. Não me endivido por consumo supérfluo.", effect: { liq: 300, div: 0, sco: 40 }, fb: "Autocontrolo financeiro! Evitaste uma dívida de consumo irrelevante." }
+            ]
+        },
+        {
+            title: "Amortização Antecipada",
+            desc: "Recebeste um bónus anual de 2.000€. Tens um crédito pessoal a decorrer com uma taxa de 10%.",
+            options: [
+                { text: "Uso os 2.000€ para abater (amortizar) a dívida do crédito pessoal.", effect: { liq: -2000, div: -2000, sco: 80 }, fb: "Brilhante! Ao abateres a dívida, poupas os 10% de juros futuros que terias de pagar." },
+                { text: "Coloco os 2.000€ numa conta a render 2% de juros brutos e continuo a pagar a dívida devagar.", effect: { liq: 0, div: 0, sco: -60 }, fb: "Matemática errada. Estás a ganhar 2% de um lado e a pagar 10% do outro. Estás a perder 8% ao ano!" }
+            ]
+        },
+        {
+            title: "Renegociação em Tempos de Crise",
+            desc: "Ficaste desempregado. Este mês não consegues pagar a prestação da casa. O que fazes amanhã?",
+            options: [
+                { text: "Ignoro o problema, não atendo os telefonemas do banco e espero arranjar trabalho rápido.", effect: { liq: 0, div: 500, sco: -150 }, fb: "O pior erro! Entras em incumprimento, és registado na 'lista negra' do Banco de Portugal e somam-se juros de mora altíssimos." },
+                { text: "Ligo imediatamente ao banco, exponho a situação e peço a ativação do PARI (Plano de Ação para o Risco de Incumprimento).", effect: { liq: 0, div: 0, sco: 70 }, fb: "Responsabilidade! Os bancos preferem negociar carências ou alongamentos de prazo do que executar penhoras." }
+            ]
+        },
+        {
+            title: "Crédito Automóvel: Valor Residual",
+            desc: "O stand propõe um ALD ou Leasing onde a prestação é baixinha (150€), mas no fim dos 4 anos tens uma 'prestação balão' (Valor Residual) de 8.000€.",
+            options: [
+                { text: "Aceito. A prestação mensal baixa cabe bem no meu orçamento atual.", effect: { liq: 0, div: 8000, sco: -50 }, fb: "Adiaste um problema enorme. Se daqui a 4 anos não tiveres os 8.000€, ficas sem o carro ou tens de pedir outro crédito." },
+                { text: "Não aceito. Adapto o carro ao meu orçamento sem deixar dívidas 'balão' para o futuro.", effect: { liq: 1000, div: 0, sco: 50 }, fb: "Sábio. Garantiste que vives dentro das tuas possibilidades reais." }
+            ]
+        },
+        {
+            title: "O Sobre-Endividamento (Taxa de Esforço)",
+            desc: "Ganhos da família: 2.000€/mês.\nPrestações atuais: 800€.\nIsto dá uma Taxa de Esforço de 40%. O banco deixa fazer mais um pequeno crédito para férias (150€/mês)?",
+            options: [
+                { text: "Sim, a taxa de esforço passaria a 47.5%. O banco deixa, por isso avanço. Precisamos de descanso.", effect: { liq: 2000, div: 4000, sco: -80 }, fb: "Alerta Vermelho! O Banco de Portugal recomenda uma Taxa de Esforço máxima de 35%. Acima disso, qualquer pequeno imprevisto gera falência." },
+                { text: "Não. A nossa taxa de esforço já ultrapassa os 35% recomendados. Estamos no limite do risco.", effect: { liq: 0, div: 0, sco: 60 }, fb: "Protegeste a saúde financeira da tua família ao reconhecer os limites da vossa capacidade financeira." }
+            ]
+        },
+        {
+            title: "O Mapa de Responsabilidades",
+            desc: "Para decidires o teu próximo passo na vida, precisas de saber exatamente quais os créditos que tens em teu nome, incluindo cartões que já não usas.",
+            options: [
+                { text: "Vou ao portal do Banco de Portugal e puxo gratuitamente o meu 'Mapa de Responsabilidades de Crédito'.", effect: { liq: 0, div: 0, sco: 100 }, fb: "Ferramenta essencial! Neste mapa consta todo o teu historial bancário. Os bancos consultam-no sempre antes de te emprestar dinheiro." },
+                { text: "Acho que me lembro de cabeça dos bancos onde tenho contas. Não é preciso ir ver papéis.", effect: { liq: 0, div: 0, sco: -50 }, fb: "Muitas pessoas têm cartões de lojas com plafonds abertos que prejudicam a Taxa de Esforço sem saberem. Informação é poder!" }
+            ]
+        }
+    ];
+
+    // =========================================================================
+    // VARIÁVEIS DE ESTADO E MECÂNICA
+    // =========================================================================
+    let appState = {
+        equipa: "", email: "", members: [],
+        liq: 1500,  // Capital inicial
+        div: 0,     // Dívida inicial
+        sco: 700,   // Score médio inicial (0-1000)
+        round: 0, startTime: null, timerInterval: null
+    };
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function startGame() {
+        // Validações
+        const eq = document.getElementById('f_equipa').value;
+        const em = document.getElementById('f_email').value;
+        const n1 = document.getElementById('f_nome1').value;
+        const t1 = document.getElementById('f_turma1').value;
+        const n2 = document.getElementById('f_nome2').value;
+        const t2 = document.getElementById('f_turma2').value;
+
+        if(!eq || !em || !n1 || !t1 || !n2 || !t2) {
+            alert("Preencham os dados obrigatórios da equipa (Mínimo 2 elementos)!");
+            return;
+        }
+
+        appState.equipa = eq; appState.email = em;
+        appState.members.push({n: n1, t: t1}, {n: n2, t: t2});
+        
+        const n3 = document.getElementById('f_nome3').value;
+        const t3 = document.getElementById('f_turma3').value;
+        if(n3 || t3) appState.members.push({n: n3 || "N/A", t: t3 || "N/A"});
+
+        // Inicia UI
+        document.getElementById('gameDashboard').style.display = 'grid';
+        appState.startTime = Date.now();
+        appState.timerInterval = setInterval(updateTimer, 1000);
+        
+        showScreen('screen-game');
+        loadQuestion();
+    }
+
+    function updateTimer() {
+        let diff = Math.floor((Date.now() - appState.startTime) / 1000);
+        let m = Math.floor(diff/60).toString().padStart(2,'0');
+        let s = (diff%60).toString().padStart(2,'0');
+        document.getElementById('ui-time').innerText = `${m}:${s}`;
+    }
+
+    function loadQuestion() {
+        if(appState.round >= desafios.length) { endGame(); return; }
+
+        const q = desafios[appState.round];
+        document.getElementById('q-counter').innerText = `Decisão ${appState.round + 1} de 15`;
+        document.getElementById('q-title').innerText = q.title;
+        document.getElementById('q-desc').innerText = q.desc;
+        
+        const optContainer = document.getElementById('q-options');
+        optContainer.innerHTML = '';
+        
+        q.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerText = opt.text;
+            btn.onclick = () => selectOption(opt);
+            optContainer.appendChild(btn);
+        });
+
+        updateDashboard();
+    }
+
+    function selectOption(opt) {
+        document.querySelectorAll('.opt-btn').forEach(b => b.style.pointerEvents = 'none');
+        
+        // Aplica efeitos
+        appState.liq += opt.effect.liq;
+        appState.div += opt.effect.div;
+        appState.sco += opt.effect.sco;
+        
+        // Limites de Score
+        if(appState.sco > 1000) appState.sco = 1000;
+        if(appState.sco < 0) appState.sco = 0;
+
+        // Feedback
+        const fbBox = document.getElementById('feedbackBox');
+        fbBox.style.display = 'block';
+        fbBox.style.borderLeftColor = opt.effect.sco > 0 ? 'var(--success)' : 'var(--danger)';
+        document.getElementById('fb-text').innerText = opt.fb;
+        
+        let impStr = [];
+        if(opt.effect.liq !== 0) impStr.push(`Liquidez: ${opt.effect.liq>0?'+':''}${opt.effect.liq}€`);
+        if(opt.effect.div !== 0) impStr.push(`Dívida: ${opt.effect.div>0?'+':''}${opt.effect.div}€`);
+        if(opt.effect.sco !== 0) impStr.push(`Score: ${opt.effect.sco>0?'+':''}${opt.effect.sco} pts`);
+        document.getElementById('fb-impact').innerText = "Impacto: " + impStr.join(' | ');
+
+        updateDashboard();
+
+        setTimeout(() => {
+            fbBox.style.display = 'none';
+            appState.round++;
+            loadQuestion();
+        }, 6000); // Dá 6 segundos para lerem o feedback e aprenderem
+    }
+
+    function updateDashboard() {
+        document.getElementById('ui-liq').innerText = `${appState.liq}€`;
+        document.getElementById('ui-div').innerText = `${appState.div}€`;
+        document.getElementById('ui-sco').innerText = appState.sco;
+    }
+
+    function endGame() {
+        clearInterval(appState.timerInterval);
+        
+        // Cálculo do Património (Dinheiro que tens - Dívidas que deves)
+        const patrimonioLiquido = appState.liq - appState.div;
+        
+        document.getElementById('r-patrimonio').innerText = `${patrimonioLiquido}€`;
+        document.getElementById('r-patrimonio').style.color = patrimonioLiquido >= 0 ? "var(--success)" : "var(--danger)";
+        document.getElementById('r-score').innerText = appState.sco;
+        document.getElementById('r-tempo').innerText = document.getElementById('ui-time').innerText;
+
+        document.getElementById('gameDashboard').style.display = 'none';
+        showScreen('screen-result');
+    }
+
+    // =========================================================================
+    // INTEGRAÇÃO COM GOOGLE FORMS
+    // =========================================================================
+    function enviarParaMoodle() {
+        const btn = document.getElementById('btnSubmit');
+        const status = document.getElementById('submitStatus');
+        btn.innerText = "A Enviar Informação...";
+        btn.disabled = true;
+
+        const urlForms = "https://docs.google.com/forms/d/e/1FAIpQLSc9GQdmuGUnnwDpDMA0k55nWcykU1JfTMucZnjxPhyhLNCx2g/formResponse";
+        
+        const patrim = appState.liq - appState.div;
+        const tempo = document.getElementById('ui-time').innerText;
+
+        const data = new FormData();
+        
+        // IDs provenientes da configuração Moodle/GForms
+        data.append("entry.697439720", appState.equipa); 
+        data.append("entry.499754161", appState.email);  
+        
+        // Membros
+        data.append("entry.1049572278", appState.members[0].n);
+        data.append("entry.1427085374", appState.members[0].t);
+        data.append("entry.290949052", appState.members[1].n);
+        data.append("entry.2002788045", appState.members[1].t);
+        
+        if(appState.members[2]) {
+            data.append("entry.1510999320", appState.members[2].n);
+            data.append("entry.1222241538", appState.members[2].t);
+        } else {
+            data.append("entry.1510999320", "");
+            data.append("entry.1222241538", "");
+        }
+
+        // Resultados
+        data.append("entry.16728536", patrim.toString());  
+        data.append("entry.232853278", tempo); 
+
+        // Envio (No-CORS para evitar bloqueios de browser)
+        fetch(urlForms, { method: "POST", mode: "no-cors", body: data })
+        .then(() => {
+            btn.style.display = "none";
+            status.innerText = "✅ Avaliação Registada! Podem consultar o Moodle da disciplina.";
+            status.style.color = "var(--success)";
+        })
+        .catch(err => {
+            console.error(err);
+            btn.innerText = "Tentar Submeter Novamente";
+            btn.disabled = false;
+            status.innerText = "❌ Ocorreu um erro de rede. Verifica a internet.";
+            status.style.color = "var(--danger)";
+        });
+    }
+
+</script>
+</body>
+</html>
